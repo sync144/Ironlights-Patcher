@@ -23,7 +23,7 @@ home = os.path.expanduser("~") # Gets the current PC username
 style = ttk.Style(wn)
 
 notiVar = StringVar() # Adjustable string variable for notification text
-notiVar.set("No file selected.")
+notiVar.set("No file selected")
 
 # Functions ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 def doNothing():
@@ -97,20 +97,25 @@ def patchAPK():
     # This function will patch the APK by simply just providing a sharedassets1 file with the modded tag.
 
     shutil.copy2("sharedassets1.assets", os.path.dirname(userAPK.name))
-    messagebox.showinfo("APK Patched", "APK Patched! Asset file may now be modded, and imported using the \"Mod APK\" button.")
+    messagebox.showinfo("APK Patched", "APK Patched! Asset file may now be modded.")
     filemenu.entryconfig("Patch", state="disable")
     modAPK.config(state="normal")
 
 def signAPK():
     # This function will sign the APK using uber-apk-signer-1.2.1.jar.
 
-    notiVar.set("Signing...")
-    shutil.copy2("uber-apk-signer-1.2.1.jar", os.path.dirname(userAPK.name))
-    os.chdir(os.path.dirname(userAPK.name))
-    os.system(f"java -jar uber-apk-signer-1.2.1.jar --apks {os.path.basename(userAPK.name)} --debug")
-    os.remove(f"{os.path.dirname(userAPK.name)}/uber-apk-signer-1.2.1.jar")
-    os.remove(userAPK.name)
-    notiVar.set("APK Signed")
+    notiVar.set("An error has occurred. APK not signed.")
+    shutil.copy("uber-apk-signer-1.2.1.jar", os.path.dirname(userAPK.name))
+
+    if os.path.exists(f"{os.path.dirname(userAPK.name)}/uber-apk-signer-1.2.1.jar"):
+        notiVar.set("Signer detected, signing...")
+        os.chdir(os.path.dirname(userAPK.name))
+        os.system(f"java -jar uber-apk-signer-1.2.1.jar --apks {os.path.basename(userAPK.name)} --debug")
+        os.remove(f"{os.path.dirname(userAPK.name)}/uber-apk-signer-1.2.1.jar")
+        os.remove(userAPK.name)
+        notiVar.set("APK Signed")
+    else:
+        notiVar.set("ERROR: Signer not copied")
 
 def SwapSharedAsset():
     # This function will mod the APK by inserting the user's sharedasset file.
