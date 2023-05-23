@@ -1,8 +1,8 @@
 # Import statements -------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-from tkinter import *
-from tkinter import ttk
-from tkinter import messagebox
-from tkinter.filedialog import askopenfile
+import tkinter
+from tkinter import filedialog
+import customtkinter as cstk
+from CTkMessagebox import CTkMessagebox
 from os import path
 from pathlib import Path
 import os
@@ -13,17 +13,19 @@ import time
 import pathlib
 
 # Window setup ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-wn = Tk()
-wn.geometry("600x200")
-wn.title("Ironlights Patcher v1.0")
-wn.iconbitmap("ironlogo.ico")
+cstk.set_appearance_mode("dark") 
+
+wnWidth = 600
+wnHeight = 200
+wn = cstk.CTk()
+wn.geometry(f"{wnWidth}x{wnHeight}")
+wn.title("Ironclient v2.0")
 
 # Variables ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 home = os.path.expanduser("~") # Gets the current PC username
-style = ttk.Style(wn)
 
-notiVar = StringVar() # Adjustable string variable for notification text
-notiVar.set("No file selected")
+# notiVar = StringVar() # Adjustable string variable for notification text
+# notiVar.set("No file selected")
 
 # Functions ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 def doNothing():
@@ -37,14 +39,14 @@ def OpenBackupFolder():
     try:
         os.startfile(f"{home}/AppData/Roaming/SideQuest/backups/com.emcneill.Ironlights/apks")
     except:
-        messagebox.showerror("Backup Folder Not Found", "APK backup folder not found (was the APK backed up in SideQuest?)")
+        CTkMessagebox(title="Backup Folder Not Found", message="APK backup folder not found (was the APK backed up in SideQuest?)", icon="cancel")
 
 def PatchPC():
     # This function lets the user patch the PC sharedasset file of Ironlights
 
     global userSharedAsset
     global assetCopy
-    userSharedAsset = askopenfile(initialdir=f"{home}/Documents", title="Select .assets File", filetypes=[("sharedasset Files", "*.assets")])
+    userSharedAsset = filedialog.askdirectory(initialdir=f"{home}/Documents", title="Select .assets File", filetypes=[("sharedasset Files", "*.assets")])
 
     if userSharedAsset is None:
         print("No file was selected, exiting...")
@@ -61,21 +63,21 @@ def PatchPC():
         userSharedAsset.close()
         shutil.move(userSharedAsset.name, assetCopyFolder)
         shutil.copy2("sharedassets1.assets", Path(os.path.dirname(userSharedAsset.name)))
-        messagebox.showinfo("Game Patched", "Game successfully patched! Asset file may now be modded.")
+        CTkMessagebox(title="Game Patched", message="Game successfully patched! Asset file may now be modded.")
 
 def UserSelectAPK():
     # This function allows the user to select the APK they wish to mod. 
 
     global userAPK
     try:
-        userAPK = askopenfile(initialdir=f"{home}/AppData/Roaming/SideQuest/backups/com.emcneill.Ironlights/apks", title="Select APK Backup", filetypes=[("APK Files", "*.apk")])
+        userAPK = filedialog.askdirectory(initialdir=f"{home}/AppData/Roaming/SideQuest/backups/com.emcneill.Ironlights/apks", title="Select APK Backup", filetypes=[("APK Files", "*.apk")])
     except:
-        messagebox.showerror("Backup Folder Not Found", "APK backup folder not found (was the APK backed up in SideQuest?)")
+        CTkMessagebox(title="Backup Folder Not Found", message="APK backup folder not found (was the APK backed up in SideQuest?)", icon="cancel")
 
     if (userAPK is None): # If no APK is selected, the UI will stay locked. If an APK is selected, the UI will be unlocked 
         print("No APK selected, keeping UI locked")
     else:
-        messagebox.showinfo("APK Loaded", "Successfully loaded APK!")
+        CTkMessagebox(title="APK Loaded", message="Successfully loaded APK!")
 
         # All of this code enables UI elements, and fixes them.
         notiText.config(fg="black")
@@ -97,7 +99,7 @@ def patchAPK():
     # This function will patch the APK by simply just providing a sharedassets1 file with the modded tag.
 
     shutil.copy2("sharedassets1.assets", os.path.dirname(userAPK.name))
-    messagebox.showinfo("APK Patched", "APK Patched! Asset file may now be modded.")
+    CTkMessagebox(title="APK Patched", message="APK Patched! Asset file may now be modded.")
     filemenu.entryconfig("Patch", state="disable")
     modAPK.config(state="normal")
 
@@ -145,20 +147,16 @@ def SwapSharedAsset():
 
 
 # Widgets -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-openBackup = Button(wn, text="Open Ironlights Backup Folder", font=("Helvetica", 8), borderwidth=1, state="disable", command=OpenBackupFolder)
-openBackup.place(x=445, y=3)
+bOpenBackup = cstk.CTkButton(wn, command=OpenBackupFolder, text="Open Ironlights Backup Folder")
+bOpenBackup.configure(text="Open Ironlights Backup Folder")
+bOpenBackup.place(x=445, y=3)
 
-modAPK = Button(wn, text="Mod APK", font=("Helvetica", 12), borderwidth=1, state="disable", command=SwapSharedAsset)
-modAPK.place(x=260, y=130)
+bModAPK = cstk.CTkButton(wn, state="disable", command=SwapSharedAsset, text="ModAPK")
+bModAPK.place(x=445, y=3)
 
-notiText = Label(wn, textvariable=notiVar, font=("Roboto", 18, "bold"), fg="grey")
-notiText.pack(side="top")
-
-pathText = Label(wn, text="Path:", fg="grey")
-pathText.place(x=151, y=78)
-
-pathBox = Text(wn, width=30, height=1, state="disable", wrap="none")
-pathBox.place(x=185, y=80)
+txtNotify = Label(wn, font=("Roboto", 18, "bold"), fg="grey")
+txtNotify = cstk.CTkLabel(master=wn, fg_color="transparent", justify="left")
+txtNotify.pack(side="top")
 
 scroll = Scrollbar(wn, command=pathBox.xview, orient="horizontal")
 scroll.place(x=185, y=100, width=240)
